@@ -5,6 +5,6 @@
 Provide insight into GitHub users, organizations and repositories using the GitHub 
 GraphQL API v4 and PowerBI.
 
-The goal of project lenis (lenis means smooth in latin) is to provide deep insight into the the different OSS projects happening within an organization as well as the ability to visualize and analyze key metrics across users, repositories and organizations.
+`project-lenis` wants to provide deep insight into the many different OSS projects within and across GitHub organizations by implementing the ability to visualize and analyze key metrics across users, repositories and organizations.
 
 
