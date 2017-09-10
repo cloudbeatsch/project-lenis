@@ -1,7 +1,7 @@
 [![To Do](https://badge.waffle.io/cloudbeatsch/project-lenis.svg?label=to%20do&title=to%20do)](http://waffle.io/cloudbeatsch/project-lenis) 
 [![In Progress](https://badge.waffle.io/cloudbeatsch/project-lenis.svg?label=in%20progress&title=in%20progress)](http://waffle.io/cloudbeatsch/project-lenis)
 
-# Abouot project-lenis
+# About project-lenis
 Provide insight into GitHub users, organizations and repositories using the GitHub 
 GraphQL API v4 and PowerBI.
 
