@@ -4,6 +4,7 @@ let util = require('util');
 let appInsights = require("applicationinsights");
 let request = require('request-promise');
 let appInsightsClient = appInsights.getClient();
+// Using the context globally only works if only 1 instance is running
 let globalContext;
 let step2Messages = [];
 
@@ -59,6 +60,7 @@ function processPage(queryTemplate, graph) {
             organizationId : graph.data.organization.id,
             repositoryId : repo.id,
             organizationName : graph.data.organization.name,
+            organizationLogin : graph.data.organization.login,
             repositoryName : repo.name,
             resourcePath: repo.resourcePath,
             pushedAt: repo.pushedAt,
@@ -82,8 +84,9 @@ function processPage(queryTemplate, graph) {
 
 function processRepositories(){
     let queryTemplate = `{
-        organization(login: ORG_PLACEHOLDER) {
+        organization(login: "ORG_PLACEHOLDER") {
             id
+            login
             name
             repositories(first: 10, PAGINATION_PLACEHOLDER orderBy: {field: PUSHED_AT, direction: DESC}) {
             totalCount
@@ -113,7 +116,7 @@ function processRepositories(){
       }`
         let orgs = process.env.ORGANIZATIONS.split(`,`);
         for (let o = 0; o < orgs.length; o++ ){
-            let queryTemplateOrg = queryTemplate.replace(`ORG_PLACEHOLDER`, `"` + orgs[o] + `"`);
+            let queryTemplateOrg = queryTemplate.replace(`ORG_PLACEHOLDER`, orgs[o]);
             let queryString = queryTemplateOrg.replace(`PAGINATION_PLACEHOLDER`, ``);
             executeQuery({query: queryString}, queryTemplateOrg, processPage);
         }
