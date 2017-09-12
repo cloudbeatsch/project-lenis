@@ -1,11 +1,9 @@
 {
-  "name": "project-lenis-azure-functions",
+  "name": "github-repositories",
   "version": "1.0.0",
   "author": "Beat Schwegler <cloudbeatsch@hotmail.com>",
   "dependencies": {
     "applicationinsights": "^0.16.0",
-    "azure-storage": "^1.3.1",
-    "request-promise": "^4.2.1",
-    "util": "^0.10.3"
+    "azure-storage": "^1.3.1"
   }
 }

@@ -20,11 +20,24 @@ GraphQL API v4 and PowerBI.
 * Name your Azure StorageTables by using the `nano-service` name followed by the description of the table itself (e.g. `githubCollaborationGraphUsers`)
 * Save your Power BI template in the `power-bi` folder. Name the same way as your `nano service` called (e.g. `github-collaboration-graph.pbit`)
 
+# Configuration
+* Set the `GITHUB_TOKEN` as describe [here](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/)
+
+# Running local
+* Install the functions core tools `npm i -g azure-functions-core-tools`
+* Copy the `appsettings.json` in `azure-functions` into `local.settings.json` and configure the required settings.
+* `cd` into `azure-functions` and run `npm install`
+* Run `func host start --debug vscode`
+* In Visual Studio Code, in the Debug view, select `Attach to Azure Functions`
+* Then you can trigger the function by running `func run your-function-name` where `your-function-name` is the name of your function
+
 # Development Tools
 * [Power BI Desktop](https://go.microsoft.com/fwlink/?LinkId=521662&clcid=0x409)
 * [Node.js](https://nodejs.org/en/)
+* [GitHub GraphQL explorer](https://developer.github.com/v4/explorer/)
 
 # Useful Documentation
 * [Azure Functions developers guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) and the [Azure Functions JavaScript developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference-node)
+* [Code and test Azure functions locally](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local)
 * [Introduction to GraphQL](https://developer.github.com/v4/guides/intro-to-graphql/) and the [GitHub GraphQL schema reference](https://developer.github.com/v4/reference/)
 * [Power BI templates](https://powerbi.microsoft.com/en-us/blog/deep-dive-into-query-parameters-and-power-bi-templates/)
