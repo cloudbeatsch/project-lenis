@@ -1,0 +1,18 @@
+{
+  "bindings": [
+        {
+          "type": "timerTrigger",
+          "name": "runInterval",
+          "schedule": "0 0 0 * * 2",
+          "direction": "in"
+        },
+        {
+          "type": "queue",
+          "direction": "out",
+          "name": "githubRepositoriesStep2",
+          "queueName": "github-repositories-step2",
+          "connection": "AzureWebJobsStorage"
+        }
+  ],
+  "disabled": false
+}

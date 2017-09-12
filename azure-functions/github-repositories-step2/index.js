@@ -1,7 +1,6 @@
 "use strict";
 
 let util = require('util');
-let azureStorage = require('azure-storage');
 let appInsights = require("applicationinsights");
 let request = require('request-promise');
 let appInsightsClient = appInsights.getClient();
@@ -10,9 +9,6 @@ let globalContext;
 
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO_TABLE = 'githubRepositories';
-let tableService = azureStorage.createTableService(process.env.AzureWebJobsStorage);
-let entGen = azureStorage.TableUtilities.entityGenerator;
 
 function RaiseException(errorMsg, exit){
     globalContext.log('github-repositories error occurred: ' + errorMsg);
@@ -51,34 +47,28 @@ function executeQuery(graphRequest, queryTemplate, next) {
 }
 
 function processPage(queryTemplate, graph) {
-    let batch = new azureStorage.TableBatch();
     for (let i = 0; i < graph.data.organization.repositories.edges.length; i++) {
         let repo = graph.data.organization.repositories.edges[i].node;
-        let tableEntry = {
-            PartitionKey : entGen.String(graph.data.organization.id),
-            RowKey : entGen.String(repo.id),
-            OrganizationName : entGen.String(graph.data.organization.name),
-            RepositoryName : entGen.String(repo.name),
-            ResourcePath: entGen.String(repo.resourcePath),
-            pushedAt: entGen.String(repo.pushedAt),
-            IsFork : entGen.Boolean(repo.isFork),
-            Description : entGen.String(repo.description)             
+        let document = {
+            PartitionKey : graph.data.organization.id,
+            RowKey : repo.id,
+            OrganizationName : graph.data.organization.name,
+            RepositoryName : repo.name,
+            ResourcePath: repo.resourcePath,
+            pushedAt: repo.pushedAt,
+            IsFork : repo.isFork,
+            Description : repo.description             
         };
         // adding the topics as properties 
         for (let t = 0; t < repo.repositoryTopics.nodes.length; t++) {
             let topicName = `topic_` + repo.repositoryTopics.nodes[t].topic.name.replace(/-/g,`_`);
-            tableEntry[topicName] = entGen.Boolean(true);
+            document[topicName] = true;
             globalContext.log(topicName);
         }
-        batch.insertOrReplaceEntity(tableEntry);
+        globalContext.bindings.githubRepositoriesDocument = JSON.stringify(document);
+        globalContext.done();
     }
    
-    tableService.executeBatch(REPO_TABLE, batch, function (error, result, response) {
-        if(error){
-            globalContext.log(`Couldn't save page in organization ` + graph.data.organization.name);
-        }
-    });       
-
     if (graph.data.organization.repositories.pageInfo.hasNextPage) {
         let afterString = `after:"` + graph.data.organization.repositories.pageInfo.endCursor + `",`
         let queryString = queryTemplate.replace(`PAGINATION_PLACEHOLDER`, afterString);
@@ -125,16 +115,12 @@ function processRepositories(){
         }
 }
 
-module.exports = function (context, inputMessage) {
+module.exports = function (context) {
     globalContext = context;
 
     try{
- 
-        tableService.createTableIfNotExists(REPO_TABLE, (error, result, response) => {
-            if(!error){
-                processRepositories();
-            }
-        });
+        globalContext.bindings.githubRepositoriesDocument =  JSON.stringify(globalContext.bindings.githubRepositoriesStep2);
+        // processRepositories();
         globalContext.done();
     } catch(error) {
         RaiseException(error, true);
