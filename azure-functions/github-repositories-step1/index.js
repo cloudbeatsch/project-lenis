@@ -1,11 +1,8 @@
-"use strict";
+`use strict`;
 
-let util = require('util');
-let appInsights = require("applicationinsights");
-let request = require('request-promise');
-let appInsightsClient = appInsights.getClient();
+let gitHubHelper = require(`../common/githubGraphQL.js`);
+let exceptionHelper = require(`../common/exceptions.js`);
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const QUERY = `query ($organization_name:String!, $end_cursor:String){
     organization(login: $organization_name) {
         id
@@ -38,47 +35,12 @@ const QUERY = `query ($organization_name:String!, $end_cursor:String){
     }
   }`;
 
-function RaiseException(errorMsg, exit, context){
-    context.log('github-repositories error occurred: ' + errorMsg);
-
-    if(appInsightsClient.config){
-        appInsightsClient.trackException(new Error(errorMsg));
-        if(exit && context){
-            context.log("Exiting from error " + errorMsg);
-            context.done(errorMsg);
-        }
-    }else{
-        context.log('App Insight is not properly setup. Please make sure APPINSIGHTS_INSTRUMENTATIONKEY is defined');
-    }
-}
-
 function executeQuery(organizationName, endCursor, next, context) {
-    let graphRequest = {
-        query: QUERY,
-        variables: JSON.stringify({ 
-            end_cursor : endCursor,
-            organization_name : organizationName
-        })
-    };
-    let uri = 'https://api.github.com/graphql';
-    let result = request({
-        method: 'POST',
-        uri,
-        headers: {
-            'Authorization': 'bearer ' + GITHUB_TOKEN,
-            'User-Agent': `project-lenis`
-        },
-        body : graphRequest, 
-        json: true
-    }).then(function (result) {
-        context.log(`got response: ${util.inspect(result)}`);
-        next(result, context);
-    })
-    .catch(function(err) {
-        var errorMessage = `Could not retrieve graph: ${graphRequest}`;
-        context.log(errorMessage);
-        throw new Error(errorMessage);
+    let variables = JSON.stringify({ 
+        end_cursor : endCursor,
+        organization_name : organizationName
     });
+    gitHubHelper.executeQuery(QUERY, variables, next, context);
 }
 
 function processPage(graph, context) {
@@ -127,6 +89,6 @@ module.exports = function (context) {
         context.log('Node.js queue trigger function processed work item', context.bindings.myQueueItem);
         processRepositories(context);
     } catch(error) {
-        RaiseException(error, true, context);
+        exceptionHelper.raiseException(error, true, context);
     }
 }
