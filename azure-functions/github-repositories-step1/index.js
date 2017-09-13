@@ -4,30 +4,64 @@ let util = require('util');
 let appInsights = require("applicationinsights");
 let request = require('request-promise');
 let appInsightsClient = appInsights.getClient();
-// Using the context globally only works if only 1 instance is running
-let globalContext;
-let step2Messages = [];
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const QUERY = `query ($organization_name:String!, $end_cursor:String){
+    organization(login: $organization_name) {
+        id
+        login
+        name
+        repositories(first: 10, after: $end_cursor orderBy: {field: PUSHED_AT, direction: DESC}) {
+        totalCount
+        edges {
+          node {
+            id
+            name
+            resourcePath  
+            pushedAt
+            repositoryTopics(first: 50) {
+              nodes {
+                 topic {
+                  name
+                }
+              }
+            }
+            isFork
+            description
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+  }`;
 
-
-function RaiseException(errorMsg, exit){
-    globalContext.log('github-repositories error occurred: ' + errorMsg);
+function RaiseException(errorMsg, exit, context){
+    context.log('github-repositories error occurred: ' + errorMsg);
 
     if(appInsightsClient.config){
         appInsightsClient.trackException(new Error(errorMsg));
-        if(exit && globalContext){
-            globalContext.log("Exiting from error " + errorMsg);
-            globalContext.done(errorMsg);
+        if(exit && context){
+            context.log("Exiting from error " + errorMsg);
+            context.done(errorMsg);
         }
     }else{
-        globalContext.log('App Insight is not properly setup. Please make sure APPINSIGHTS_INSTRUMENTATIONKEY is defined');
+        context.log('App Insight is not properly setup. Please make sure APPINSIGHTS_INSTRUMENTATIONKEY is defined');
     }
 }
 
-function executeQuery(graphRequest, queryTemplate, next) {
-    var uri = 'https://api.github.com/graphql';
-    var result = request({
+function executeQuery(organizationName, endCursor, next, context) {
+    let graphRequest = {
+        query: QUERY,
+        variables: JSON.stringify({ 
+            end_cursor : endCursor,
+            organization_name : organizationName
+        })
+    };
+    let uri = 'https://api.github.com/graphql';
+    let result = request({
         method: 'POST',
         uri,
         headers: {
@@ -37,17 +71,17 @@ function executeQuery(graphRequest, queryTemplate, next) {
         body : graphRequest, 
         json: true
     }).then(function (result) {
-        globalContext.log(`got response: ${util.inspect(result)}`);
-        next(queryTemplate, result);
+        context.log(`got response: ${util.inspect(result)}`);
+        next(result, context);
     })
     .catch(function(err) {
         var errorMessage = `Could not retrieve graph: ${graphRequest}`;
-        globalContext.log(errorMessage);
+        context.log(errorMessage);
         throw new Error(errorMessage);
     });
 }
 
-function processPage(queryTemplate, graph) {
+function processPage(graph, context) {
     for (let i = 0; i < graph.data.organization.repositories.edges.length; i++) {
         let repo = graph.data.organization.repositories.edges[i].node;
         let topics = []
@@ -68,67 +102,31 @@ function processPage(queryTemplate, graph) {
             description : repo.description,
             topics : topics,             
         };
-        step2Messages.push(document);
+        context.step2Messages.push(document);
     }
    
     if (graph.data.organization.repositories.pageInfo.hasNextPage) {
-        let afterString = `after:"` + graph.data.organization.repositories.pageInfo.endCursor + `",`
-        let queryString = queryTemplate.replace(`PAGINATION_PLACEHOLDER`, afterString);
-        executeQuery({query: queryString}, queryTemplate, processPage);
+        executeQuery(graph.data.organization.login, graph.data.organization.repositories.pageInfo.endCursor, processPage, context);
     }
     else {
-        globalContext.bindings.githubRepositoriesStep2 = step2Messages;
-        globalContext.done();
+        context.bindings.githubRepositoriesStep2 = context.step2Messages;
+        context.done();
     }
 }
 
-function processRepositories(){
-    let queryTemplate = `{
-        organization(login: "ORG_PLACEHOLDER") {
-            id
-            login
-            name
-            repositories(first: 10, PAGINATION_PLACEHOLDER orderBy: {field: PUSHED_AT, direction: DESC}) {
-            totalCount
-            edges {
-              node {
-                id
-                name
-                resourcePath  
-                pushedAt
-                repositoryTopics(first: 50) {
-                  nodes {
-                     topic {
-                      name
-                    }
-                  }
-                }
-                isFork
-                description
-              }
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
-          }
-        }
-      }`
-        let orgs = process.env.ORGANIZATIONS.split(`,`);
-        for (let o = 0; o < orgs.length; o++ ){
-            let queryTemplateOrg = queryTemplate.replace(`ORG_PLACEHOLDER`, orgs[o]);
-            let queryString = queryTemplateOrg.replace(`PAGINATION_PLACEHOLDER`, ``);
-            executeQuery({query: queryString}, queryTemplateOrg, processPage);
-        }
+function processRepositories(context){
+    context[`step2Messages`] = [];
+    let orgs = process.env.ORGANIZATIONS.split(`,`);
+    for (let o = 0; o < orgs.length; o++ ){
+        executeQuery(orgs[o], null, processPage, context);
+    }
 }
 
 module.exports = function (context) {
-    globalContext = context;
-
     try{
         context.log('Node.js queue trigger function processed work item', context.bindings.myQueueItem);
-        processRepositories();
+        processRepositories(context);
     } catch(error) {
-        RaiseException(error, true);
+        RaiseException(error, true, context);
     }
 }

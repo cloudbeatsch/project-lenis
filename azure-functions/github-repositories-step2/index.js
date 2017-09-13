@@ -73,7 +73,7 @@ function processRepository(organizationName, repositoryName, context){
                       target {
                               ... on Commit {
                             id
-                            history(first: 100) {
+                            history(first: 90) {
                         edges {
                             node {
                             url
