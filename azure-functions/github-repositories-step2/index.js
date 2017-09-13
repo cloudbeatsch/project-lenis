@@ -6,38 +6,26 @@ let exceptionHelper = require(`../common/exceptions.js`);
 const QUERY = `query ($organization_name:String!, $repository_name:String! ){
     organization(login: $organization_name) {
       repository( name : $repository_name) {
-            name
-            resourcePath
-            pushedAt
-            repositoryTopics(first: 10) {
-              nodes {
-                topic {
-                  name
-                }
-              }
-            }
-            isFork
-            description
-            defaultBranchRef {
-              target {
-                      ... on Commit {
+        defaultBranchRef {
+            target {
+                ... on Commit {
                     id
                     history(first: 90) {
-                edges {
-                    node {
-                    url
-                      messageHeadline
-                      oid
-                      message
-                      author {
-                        name
-                      date
-                      }
+                        edges {
+                            node {
+                                url
+                                messageHeadline
+                                oid
+                                message
+                                author {
+                                    name
+                                    date
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
-          }
+            }
         }
     }
   }
