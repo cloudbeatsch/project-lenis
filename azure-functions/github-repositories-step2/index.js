@@ -53,17 +53,17 @@ function processResult(graph, context) {
     context.done();
 }
 
-function executeQuery(organizationName, repositoryName, next, context) {
+function executeQuery(organizationName, repositoryName, context) {
     let variables = JSON.stringify({ 
         repository_name : repositoryName,
         organization_name : organizationName
     });
-    gitHubHelper.executeQuery(QUERY, variables, next, context);
+    gitHubHelper.executeQuery(QUERY, variables, processResult, context);
 }
 
 module.exports = function (context) {
     try{
-        executeQuery(context.bindings.githubRepositoriesStep2.organizationLogin, context.bindings.githubRepositoriesStep2.repositoryName, processResult, context);
+        executeQuery(context.bindings.githubRepositoriesStep2.organizationLogin, context.bindings.githubRepositoriesStep2.repositoryName, context);
     } catch(error) {
         exceptionHelper.raiseException(error, true, context);
     }
