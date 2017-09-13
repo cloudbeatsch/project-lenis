@@ -6,38 +6,26 @@ let exceptionHelper = require(`../common/exceptions.js`);
 const QUERY = `query ($organization_name:String!, $repository_name:String! ){
     organization(login: $organization_name) {
       repository( name : $repository_name) {
-            name
-            resourcePath
-            pushedAt
-            repositoryTopics(first: 10) {
-              nodes {
-                topic {
-                  name
-                }
-              }
-            }
-            isFork
-            description
-            defaultBranchRef {
-              target {
-                      ... on Commit {
+        defaultBranchRef {
+            target {
+                ... on Commit {
                     id
                     history(first: 90) {
-                edges {
-                    node {
-                    url
-                      messageHeadline
-                      oid
-                      message
-                      author {
-                        name
-                      date
-                      }
+                        edges {
+                            node {
+                                url
+                                messageHeadline
+                                oid
+                                message
+                                author {
+                                    name
+                                    date
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
-          }
+            }
         }
     }
   }
@@ -53,17 +41,17 @@ function processResult(graph, context) {
     context.done();
 }
 
-function executeQuery(organizationName, repositoryName, next, context) {
+function executeQuery(organizationName, repositoryName, context) {
     let variables = JSON.stringify({ 
         repository_name : repositoryName,
         organization_name : organizationName
     });
-    gitHubHelper.executeQuery(QUERY, variables, next, context);
+    gitHubHelper.executeQuery(QUERY, variables, processResult, context);
 }
 
 module.exports = function (context) {
     try{
-        executeQuery(context.bindings.githubRepositoriesStep2.organizationLogin, context.bindings.githubRepositoriesStep2.repositoryName, processResult, context);
+        executeQuery(context.bindings.githubRepositoriesStep2.organizationLogin, context.bindings.githubRepositoriesStep2.repositoryName, context);
     } catch(error) {
         exceptionHelper.raiseException(error, true, context);
     }

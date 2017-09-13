@@ -3,15 +3,24 @@
 let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 
-const QUERY = `query ($organization_name:String!, $end_cursor:String){
+const ORGANIZATION_QUERY = `query ($organization_name:String!, $end_cursor:String){
     organization(login: $organization_name) {
         id
         login
         name
         repositories(first: 10, after: $end_cursor orderBy: {field: PUSHED_AT, direction: DESC}) {
         totalCount
-        edges {
-          node {
+        ... Repos
+        pageInfo {
+           endCursor
+           hasNextPage
+        }
+      }
+    }
+  }
+  fragment Repos on RepositoryConnection {
+    edges {
+        node {
             id
             name
             resourcePath  
@@ -25,25 +34,19 @@ const QUERY = `query ($organization_name:String!, $end_cursor:String){
             }
             isFork
             description
-          }
         }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
     }
   }`;
 
-function executeQuery(organizationName, endCursor, next, context) {
+function executeOrganizationQuery(organizationName, endCursor, next, context) {
     let variables = JSON.stringify({ 
         end_cursor : endCursor,
         organization_name : organizationName
     });
-    gitHubHelper.executeQuery(QUERY, variables, next, context);
+    gitHubHelper.executeQuery(ORGANIZATION_QUERY, variables, next, context);
 }
 
-function processPage(graph, context) {
+function processOrganizationRepositoryPage(graph, context) {
     for (let i = 0; i < graph.data.organization.repositories.edges.length; i++) {
         let repo = graph.data.organization.repositories.edges[i].node;
         let topics = []
@@ -57,6 +60,7 @@ function processPage(graph, context) {
             repositoryId : repo.id,
             organizationName : graph.data.organization.name,
             organizationLogin : graph.data.organization.login,
+            repositoryOwner : graph.data.organization.login,
             repositoryName : repo.name,
             resourcePath: repo.resourcePath,
             pushedAt: repo.pushedAt,
@@ -68,7 +72,7 @@ function processPage(graph, context) {
     }
    
     if (graph.data.organization.repositories.pageInfo.hasNextPage) {
-        executeQuery(graph.data.organization.login, graph.data.organization.repositories.pageInfo.endCursor, processPage, context);
+        executeOrganizationQuery(graph.data.organization.login, graph.data.organization.repositories.pageInfo.endCursor, processOrganizationRepositoryPage, context);
     }
     else {
         context.bindings.githubRepositoriesStep2 = context.step2Messages;
@@ -80,7 +84,7 @@ function processRepositories(context){
     context[`step2Messages`] = [];
     let orgs = process.env.ORGANIZATIONS.split(`,`);
     for (let o = 0; o < orgs.length; o++ ){
-        executeQuery(orgs[o], null, processPage, context);
+        executeOrganizationQuery(orgs[o], null, processOrganizationRepositoryPage, context);
     }
 }
 
