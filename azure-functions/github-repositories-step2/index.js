@@ -2,56 +2,38 @@
 
 let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
+let repositoryQuery = require(`../common/queries/repository.js`).repositoryQuery;
 
-const QUERY = `query ($organization_name:String!, $repository_name:String! ){
-    organization(login: $organization_name) {
-      repository( name : $repository_name) {
-        defaultBranchRef {
-            target {
-                ... on Commit {
-                    id
-                    history(first: 90) {
-                        edges {
-                            node {
-                                url
-                                messageHeadline
-                                oid
-                                message
-                                author {
-                                    name
-                                    date
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-  }
-}`;
+const MAX_COMMITS = 500;
 
 function processResult(graph, context) {
-    let document = context.bindings.githubRepositoriesStep2;
-    document[`history`] = []
-    for (let i = 0; i < graph.data.organization.repository.defaultBranchRef.target.history.edges.length; i++) {
-        document.history.push(graph.data.organization.repository.defaultBranchRef.target.history.edges[i].node);
+    let result = context.result;
+    for (let i = 0; i < graph.data.repository.defaultBranchRef.target.history.edges.length; i++) {
+        result.history.push(graph.data.repository.defaultBranchRef.target.history.edges[i].node);
     }
-    context.bindings.githubRepositoriesDocument =  JSON.stringify(document);
-    context.done();
+    if ((result.history.length >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPag)) {
+        context.bindings.githubRepositoriesDocument =  JSON.stringify(result);
+        context.done();
+    }
+    else {
+        executeQuery(context.bindings.githubRepositoriesStep2.repositoryOwner, context.bindings.githubRepositoriesStep2.repositoryName, graph.data.repository.defaultBranchRef.target.history.pageInfo.endCursor, context);
+    }
 }
 
-function executeQuery(organizationName, repositoryName, context) {
+function executeQuery(repositoryOwner, repositoryName, endCursor, context) {
     let variables = JSON.stringify({ 
+        repository_owner : repositoryOwner,
         repository_name : repositoryName,
-        organization_name : organizationName
+        end_cursor : endCursor
     });
-    gitHubHelper.executeQuery(QUERY, variables, processResult, context);
+    gitHubHelper.executeQuery(repositoryQuery, variables, processResult, context);
 }
 
 module.exports = function (context) {
     try{
-        executeQuery(context.bindings.githubRepositoriesStep2.organizationLogin, context.bindings.githubRepositoriesStep2.repositoryName, context);
+        context['result'] = context.bindings.githubRepositoriesStep2;
+        context.result[`history`] = [];
+        executeQuery(context.bindings.githubRepositoriesStep2.repositoryOwner, context.bindings.githubRepositoriesStep2.repositoryName, null, context);
     } catch(error) {
         exceptionHelper.raiseException(error, true, context);
     }

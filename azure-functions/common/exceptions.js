@@ -1,4 +1,4 @@
-"use strict";
+`use strict`;
 
 let appInsights = require(`applicationinsights`);
 let appInsightsClient = appInsights.getClient();

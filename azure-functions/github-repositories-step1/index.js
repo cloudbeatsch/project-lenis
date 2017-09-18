@@ -2,48 +2,14 @@
 
 let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
-
-const ORGANIZATION_QUERY = `query ($organization_name:String!, $end_cursor:String){
-    organization(login: $organization_name) {
-        id
-        login
-        name
-        repositories(first: 10, after: $end_cursor orderBy: {field: PUSHED_AT, direction: DESC}) {
-        totalCount
-        ... Repos
-        pageInfo {
-           endCursor
-           hasNextPage
-        }
-      }
-    }
-  }
-  fragment Repos on RepositoryConnection {
-    edges {
-        node {
-            id
-            name
-            resourcePath  
-            pushedAt
-            repositoryTopics(first: 50) {
-              nodes {
-                 topic {
-                  name
-                }
-              }
-            }
-            isFork
-            description
-        }
-    }
-  }`;
+let organizationQuery = require(`../common/queries/organization.js`).organizationQuery;
 
 function executeOrganizationQuery(organizationName, endCursor, next, context) {
     let variables = JSON.stringify({ 
         end_cursor : endCursor,
         organization_name : organizationName
     });
-    gitHubHelper.executeQuery(ORGANIZATION_QUERY, variables, next, context);
+    gitHubHelper.executeQuery(organizationQuery, variables, next, context);
 }
 
 function processOrganizationRepositoryPage(graph, context) {
