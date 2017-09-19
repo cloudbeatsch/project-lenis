@@ -1,30 +1,5 @@
 #!/usr/bin/env node
 
-/*
-Issue:
-What is this for - if just configuring app settings,
-then also needs to redeploy function and thus
-needs to create app using ARM template to be able to 
-do differentia updates
-
-Export existing deployment
-https://azure.microsoft.com/en-us/blog/export-template/
-
-Lenis CLI capabilities
-- Create deployment
-- Authenticate users
-- Set appsettings
-- Add remove users and orgs
-- Fiter tags
-
-Examples:
-lenis login "MYCONNECTIONSTRING"  // Sets connectionstring to use for calls
-lenis service list // Gets and prints current service configurations
-lenis service get <myservicename> // Get specific service configuration
-lenis service apply <myservicename> -f appsettings.json // Applies a configuration file to service configuration
-SERVICENAME={serialzedconfig}
-*/
-
 var program = require('commander');
 var profilePath = './profile.json'
 var profile = require(profilePath);
