@@ -13,6 +13,7 @@ const REPOSITORY_QUERY = `query ($repository_owner:String!, $repository_name:Str
                         }
                         edges {
                            node {
+                               committedDate
                                url
                                messageHeadline
                                oid
@@ -22,7 +23,6 @@ const REPOSITORY_QUERY = `query ($repository_owner:String!, $repository_name:Str
                                     login
                                     name
                                 }
-                                date
                               }
                            }
                        }

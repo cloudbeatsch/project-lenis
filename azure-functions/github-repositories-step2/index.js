@@ -11,18 +11,26 @@ function processResult(graph, context) {
     for (let i = 0; i < graph.data.repository.defaultBranchRef.target.history.edges.length; i++) {
         let commit = graph.data.repository.defaultBranchRef.target.history.edges[i].node;
         
-        result.history.push({
-            login : commit.author.user.login,
-            date : commit.date
-        });
+        let commitObj = {};
+        if (commit.author.user) {
+            commitObj[`login`] = commit.author.user.login;
+        }
+        if (commit.committedDate){
+            commitObj[`committedDate`] = commit.committedDate;
+        }
+        result.history.push({commitObj});
     }
-    if ((result.history.length >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPag)) {
+    if ((result.history.length >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPage)) {
         context.log(`Adding commits to cosmos db`);
         context.bindings.githubRepositoriesDocument =  JSON.stringify(result);
         context.done();
     }
     else {
-        executeQuery(context.bindings.githubRepositoriesStep2.repositoryOwner, context.bindings.githubRepositoriesStep2.repositoryName, graph.data.repository.defaultBranchRef.target.history.pageInfo.endCursor, context);
+        // to not being flagged as abused we wait 10 seconds before executing the next query
+        context.log(`Wait 10 seconds before continuing query GitHub`);
+        setTimeout(function() {
+            executeQuery(context.bindings.githubRepositoriesStep2.repositoryOwner, context.bindings.githubRepositoriesStep2.repositoryName, graph.data.repository.defaultBranchRef.target.history.pageInfo.endCursor, context);
+          }, 10000);
     }
 }
 
