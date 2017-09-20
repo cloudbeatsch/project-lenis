@@ -3,13 +3,12 @@
 let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 let organizationQuery = require(`../common/queries/organization.js`).organizationQuery;
-let azureTableHelper = require(`../common/azureTableStorageHelper.js`)
-let azure = require('azure-storage');
-let path = require('path');
+let configHelper = require(`../common/serviceConfigHelper.js`)
+let query = require(`azure-storage`);
+let path = require(`path`);
 
 var serviceName = path.basename(__dirname);
-var tableName = 'lenis'
-var tableService = azure.createTableService()
+var tableName = process.env['AZURE_STORAGE_TABLE_NAME']
 
 function executeOrganizationQuery(organizationName, endCursor, next, context) {
     let variables = JSON.stringify({
@@ -55,33 +54,37 @@ function processOrganizationRepositoryPage(graph, context) {
 
 function processRepositories(context) {
     context[`step2Messages`] = [];
-    let orgs = getOrganisations((orgs, err) => {
-        if (err) {
+    getOrganizations((err, orgs) => {
+        if(err) {
             throw err
         }
-        for (let i = 0; i < orgs.length; i++) {
-            executeOrganizationQuery(orgs[i], null, processOrganizationRepositoryPage, context);
+        if(orgs) {
+            for (let i = 0; i < orgs.length; i++) {
+                executeOrganizationQuery(orgs[i], null, processOrganizationRepositoryPage, context);
+            }
         }
     });
 }
 
-function getOrganisations(callback) {
-    var query = new azure.TableQuery()
-        .where('ServiceName eq ?', serviceName);
-    azureTableHelper.executeAzureQuery(tableService, tableName, query, (results) => {
-        if (results.length > 0) {
-            var config = JSON.parse(results[0].Configuration['_'])
-            var orgs = config.organisations.split(',')
-            return callback(orgs, null)
+function getOrganizations(callback) {
+    configHelper.getServiceConfig(tableName, serviceName, (err, serviceConfig) => {
+        if(err) {
+            return callback(err, null)
         }
-        return callback(null, new Error("Couldn't retrieve configuration for service " + serviceName))
+        var orgs = serviceConfig.organizations.length > 0 ? serviceConfig.organizations.split(',') : null
+        return callback(null, orgs)
     })
 }
 
 module.exports = function (context) {
     try {
-        context.log('Node.js queue trigger function processed work item', context.bindings.myQueueItem);
-        processRepositories(context);
+        configHelper.setupConfig(tableName, serviceName, (err, serviceConfig) => {
+            if(err) {
+                return context.error('Cannot load service config, error: ' + err.toString())
+            }
+            context.log('Node.js queue trigger function processed work item', context.bindings.myQueueItem);
+            processRepositories(context);
+        })
     } catch (error) {
         exceptionHelper.raiseException(error, true, context);
     }

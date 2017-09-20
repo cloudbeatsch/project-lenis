@@ -61,4 +61,4 @@ typings/
 .env
 
 # cli profile
-cli/profile.json
+*/profile.json
