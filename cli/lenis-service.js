@@ -23,11 +23,20 @@ program
 program
     .command('get <service>')
     .description('get the current service configuration')
-    .action((service) => {
-        if (profile.tableConnectionString === "") {
-            return console.log("Login required before any operations can be performed")
-        }
-        getServiceConfig(service)
+    .option('-o, --output [format]', 'format output')
+    .action((service, options) => {
+        getServiceConfig(service, (config) => {
+            var str = ""
+            var fmt = options.output ? options.output.toLowerCase() : ""
+            switch(fmt) {
+                case 'json':
+                    str = JSON.stringify(config, null, 2)
+                    break
+                default:
+                    str = config
+            }
+            console.log(str)
+        })
     });
 
 program
@@ -47,15 +56,6 @@ program
 
 program.parse(process.argv);
 
-if (program.args.length < 1) {
-    program.help()
-  } else {
-    if (!program._execs[program.args[0]]) {
-      console.log('Unknown Command')
-      program.help()
-    }
-  }
-
 function listServices() {
     executeQuery(null, (results) => {
         for (var i = 0; i < results.length; i++) {
@@ -64,13 +64,13 @@ function listServices() {
     })
 }
 
-function getServiceConfig(service) {
+function getServiceConfig(service, callback) {
     var query = new azure.TableQuery()
         .where('RowKey eq ?', service);
     executeQuery(query, (results) => {
         if (results.length > 0) {
             var config = JSON.parse(results[0].Configuration['_'])
-            console.log(config)
+            callback(config)
         }
     })
 }
