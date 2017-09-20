@@ -1,0 +1,21 @@
+{
+  "bindings": [
+        {
+          "type": "queueTrigger",
+          "direction": "in",
+          "name": "githubCollabQueue",
+          "queueName": "github-collab-queue",
+          "connection": "AzureWebJobsStorage"
+        },
+        {
+          "name": "githubCollaborationsDocument",
+          "type": "documentDB",
+          "databaseName": "project-lenis",
+          "collectionName": "githubCollaborations",
+          "createIfNotExists": true,
+          "connection": "COSMOS_DB_CONNECTION_STRING",     
+          "direction": "out"
+        }
+  ],
+  "disabled": false
+}

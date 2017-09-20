@@ -24,7 +24,7 @@ function executeQuery(query, variables, next, context) {
         next(result, context);
     })
     .catch(function(err) {
-        var errorMessage = `Could not retrieve graph: ${graphRequest}`;
+        var errorMessage = `Could not retrieve graph: ${JSON.stringify(graphRequest)}, error: ${err}`;
         context.log(errorMessage);
         throw new Error(errorMessage);
     });
