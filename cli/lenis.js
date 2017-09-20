@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 
 var program = require('commander');
-var profilePath = './profile.json'
-var profile = require(profilePath);
 var fs = require("fs")
+
+var profilePath = './profile.json'
+if (!fs.existsSync(profilePath)) {
+  var defaultProfile = JSON.stringify({ organizations: "" }, null, 2)
+  fs.writeFileSync(profilePath, defaultProfile);
+}
+var profile = require(profilePath);
 
 program
   .version('0.0.1')
@@ -12,7 +17,7 @@ program
   .action((tableName, tableConnectionString) => {
     profile.tableName = tableName
     profile.tableConnectionString = tableConnectionString;
-    fs.writeFile(profilePath, JSON.stringify(profile, null, 2), function (err) {
+    fs.writeFile(profilePath, JSON.stringify(profile, null, 2), (err) => {
       if (err) return console.log(err);
       console.log("Updated profile")
     });
@@ -28,6 +33,6 @@ if (program.args.length < 1) {
 } else {
   if (!program._execs[program.args[0]]) {
     console.log('Unknown Command: lenis ' + program.args.join(' '))
-    program.help() 
+    program.help()
   }
 }
