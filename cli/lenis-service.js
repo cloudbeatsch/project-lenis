@@ -6,18 +6,29 @@ var lenis = require("./lenis.js");
 var profile = require('./profile.json');
 var glob = require("glob");
 
+if (profile.tableConnectionString === "") {
+    return console.log("Login required before any service operations can be performed")
+}
+
 var tableName = profile.tableName
 var tableService = azure.createTableService(profile.tableConnectionString)
 
 program
     .command('list')
     .description('list all the current services')
-    .action(() => { listServices() });
+    .action(() => {
+        listServices()
+    });
 
 program
     .command('get <service>')
     .description('get the current service configuration')
-    .action((service) => { getServiceConfig(service) });
+    .action((service) => {
+        if (profile.tableConnectionString === "") {
+            return console.log("Login required before any operations can be performed")
+        }
+        getServiceConfig(service)
+    });
 
 program
     .command('apply <service>')
@@ -36,15 +47,14 @@ program
 
 program.parse(process.argv);
 
-
 if (program.args.length < 1) {
     program.help()
-} else {
+  } else {
     if (!program._execs[program.args[0]]) {
-        console.log('Unknown Command: lenis service ' + program.args.join(' '))
-        program.help()
+      console.log('Unknown Command')
+      program.help()
     }
-}
+  }
 
 function listServices() {
     executeQuery(null, (results) => {

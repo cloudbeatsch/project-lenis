@@ -32,7 +32,7 @@ if (program.args.length < 1) {
   program.help()
 } else {
   if (!program._execs[program.args[0]]) {
-    console.log('Unknown Command: lenis ' + program.args.join(' '))
+    console.log('Unknown Command')
     program.help()
   }
 }
