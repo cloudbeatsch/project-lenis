@@ -4,14 +4,20 @@ let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 let repositoryQuery = require(`../common/queries/repository.js`).repositoryQuery;
 
-const MAX_COMMITS = 500;
+const MAX_COMMITS = 50000;
 
 function processResult(graph, context) {
     let result = context.result;
     for (let i = 0; i < graph.data.repository.defaultBranchRef.target.history.edges.length; i++) {
-        result.history.push(graph.data.repository.defaultBranchRef.target.history.edges[i].node);
+        let commit = graph.data.repository.defaultBranchRef.target.history.edges[i].node;
+        
+        result.history.push({
+            login : commit.author.user.login,
+            date : commit.date
+        });
     }
     if ((result.history.length >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPag)) {
+        context.log(`Adding commits to cosmos db`);
         context.bindings.githubRepositoriesDocument =  JSON.stringify(result);
         context.done();
     }

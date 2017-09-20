@@ -18,9 +18,12 @@ const REPOSITORY_QUERY = `query ($repository_owner:String!, $repository_name:Str
                                oid
                                message
                                author {
-                                   name
-                                   date
-                               }
+                                 user {
+                                    login
+                                    name
+                                }
+                                date
+                              }
                            }
                        }
                    }
