@@ -1,0 +1,20 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "name": "myTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 */5 * * * *"
+    },
+    {
+      "name":"repoDocument",
+      "type": "documentDB",
+      "databaseName":"githubdata",
+      "collectionName":"githubdata",
+      "createIfNotExists":"true",
+      "connection":"COSMOS_DB_CONNECTION_STRING",
+      "direction":"out"
+    }
+  ]
+}
