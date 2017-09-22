@@ -21,6 +21,7 @@ const ORG_USERS_QUERY = `query($organization_name:String!, $end_cursor:String) {
         }
         nodes {
           login
+          location
         }
       }
     }
