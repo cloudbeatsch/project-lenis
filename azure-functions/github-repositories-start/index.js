@@ -4,11 +4,6 @@ let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 let organizationMembersQuery = require(`../common/queries/organization.js`).organizationMembersQuery;
 let configHelper = require(`../common/serviceConfigHelper.js`)
-let query = require(`azure-storage`);
-let path = require(`path`);
-
-var serviceName = path.basename(__dirname);
-var tableName = `configurations`;
 
 function executeMembersQuery(organizationName, endCursor, next, context) {
     let variables = JSON.stringify({
@@ -39,6 +34,7 @@ function processMembersPage(graph, context) {
     else {
         context.bindings.githubRepositoriesStep1 = context.step1Messages;
         context.done();
+        return;
     }
 }
 
@@ -46,6 +42,7 @@ function processOrganization(context) {
     context[`step1Messages`] = [];
     const orgs = process.env.ORGANIZATIONS.split(',');
     for (let i = 0; i < orgs.length; i++) {
+        context.log(`process organization: ` + orgs[i]);
         context.step1Messages.push(JSON.stringify({ login: orgs[i], type : "organization"}));
         executeMembersQuery(orgs[i], null, processMembersPage, context);
     }
