@@ -1,0 +1,9 @@
+{
+  "name": "github-repositories-start",
+  "version": "1.0.0",
+  "author": "Beat Schwegler <cloudbeatsch@hotmail.com>",
+  "dependencies": {
+    "applicationinsights": "^0.16.0",
+    "azure-storage": "^1.3.1"
+  }
+}

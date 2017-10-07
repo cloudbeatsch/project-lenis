@@ -12,7 +12,7 @@ const ORGANIZATION_QUERY = `query ($organization_name:String!, $end_cursor:Strin
     }
   }` + repositoryFragment;
 
-const ORGANIZATION_USERS_QUERY = `query($organization_name:String!, $end_cursor:String) {
+const ORGANIZATION_MEMBERS_QUERY = `query($organization_name:String!, $end_cursor:String) {
     organization(login: $organization_name) {
       members(first: 100, after: $end_cursor) {
         pageInfo {
@@ -45,7 +45,7 @@ const ORGANIZATION_USERS_QUERY = `query($organization_name:String!, $end_cursor:
 
 module.exports = {
   organizationQuery: ORGANIZATION_QUERY,
-  organizationUsersQuery: ORGANIZATION_USERS_QUERY
+  organizationMembersQuery: ORGANIZATION_MEMBERS_QUERY
 }
 
 

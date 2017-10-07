@@ -12,7 +12,7 @@ const REPOSITORY_FRAGMENT = `fragment REPOSITORY_FRAGMENT on RepositoryConnectio
             name
             resourcePath  
             pushedAt
-            repositoryTopics(first: 50) {
+            repositoryTopics(first: 10) {
               nodes {
                  topic {
                   name

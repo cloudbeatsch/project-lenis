@@ -2,6 +2,8 @@
 
 let util = require('util');
 let request = require('request-promise');
+let exceptionHelper = require(`../common/exceptions.js`);
+
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 function executeQuery(query, variables, next, context) {
@@ -20,13 +22,27 @@ function executeQuery(query, variables, next, context) {
         body : graphRequest, 
         json: true
     }).then(function (result) {
-        context.log(`got response: ${util.inspect(result)}`);
-        next(result, context);
+        try {
+            if (result === undefined) {
+                next(null, context);
+                return;
+            }
+            context.log(`got response: ${util.inspect(result)}`);
+            next(result, context);
+            return;
+        }
+        catch (err) {
+            var errorMessage = `Failed processing: ${JSON.stringify(graphRequest)}, error: ${err}`;
+            context.log(errorMessage);
+            exceptionHelper.raiseException(errorMessage, true, context);
+            return;
+        }
     })
     .catch(function(err) {
         var errorMessage = `Could not retrieve graph: ${JSON.stringify(graphRequest)}, error: ${err}`;
         context.log(errorMessage);
-        throw new Error(errorMessage);
+        exceptionHelper.raiseException(errorMessage, true, context);
+        return;
     });
 }   
 

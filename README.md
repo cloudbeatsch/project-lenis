@@ -31,6 +31,15 @@ GraphQL API v4 and PowerBI.
 * In Visual Studio Code, in the Debug view, select `Attach to Azure Functions`
 * Then you can trigger the function by running `func run your-function-name` where `your-function-name` is the name of your function
 
+# Using the CLI
+* `cd` into `cli/` and run `npm install`
+* Run `node lenis login <AZURE_TABLE_NAME> "<AZURE_STORAGE_CONNECTION_STRING>"`
+* Run `node lenis-service list` to list all the currently loaded services
+* Run `node lenis-service get <YOUR_SERVICE_NAME> -o json > service.json` to download the service's current configuration
+* Edit the `service.json` file using a text editor i.e. vscode, atom, notepad.
+* Apply your changes by running `node lenis-service apply <YOUR_SERVICE_NAME> -f service.json`
+* Your services will now pick up this updated config when performing queries
+
 # Development Tools
 * [Power BI Desktop](https://go.microsoft.com/fwlink/?LinkId=521662&clcid=0x409)
 * [Node.js](https://nodejs.org/en/)

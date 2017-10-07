@@ -1,23 +1,23 @@
 "use strict";
 const gitHubHelper = require(`../common/githubGraphQL.js`);
 const exceptionHelper = require(`../common/exceptions.js`);
-const organizationUsersQuery = require(`../common/queries/organization.js`).organizationUsersQuery;
+const organizationMembersQuery = require(`../common/queries/organization.js`).organizationMembersQuery;
 
-function executeOrganizationUsersQuery(orgName, endCursor, next, context){
+function executeOrganizationMembersQuery(orgName, endCursor, next, context){
     const variables = JSON.stringify({
         end_cursor: endCursor,
         organization_name: orgName
     });
-    gitHubHelper.executeQuery(organizationUsersQuery, variables, next, context)
+    gitHubHelper.executeQuery(organizationMembersQuery, variables, next, context)
 }
 
 
-function processOrganizationUsersPage(graph, context) {
+function processOrganizationMembersPage(graph, context) {
     graph.data.organization.members.nodes.forEach(m => {
         context.logins.push(m.login);
     });
     if (graph.data.organization.members.pageInfo.hasNextPage) {
-        executeOrganizationUsersQuery(graph.data.organization.login, graph.data.organization.members.pageInfo.endCursor, processOrganizationUsersPage, context);
+        executeOrganizationMembersQuery(graph.data.organization.login, graph.data.organization.members.pageInfo.endCursor, processOrganizationMembersPage, context);
     }
     else {
         context.bindings.githubCollabQueue = context.logins;
@@ -25,15 +25,15 @@ function processOrganizationUsersPage(graph, context) {
     }
 }
 
-function processOrganizationUsers(context) {
+function processOrganizationMembers(context) {
     context.logins = []
     const orgs = process.env.ORGANIZATIONS.split(',');
-    orgs.forEach(orgName => executeOrganizationUsersQuery(orgName, null, processOrganizationUsersPage, context))
+    orgs.forEach(orgName => executeOrganizationMembersQuery(orgName, null, processOrganizationMembersPage, context))
 }
 
 module.exports = function (context, inputMessage) {
     try {
-        processOrganizationUsers(context)
+        processOrganizationMembers(context)
     } catch(error) {
         exceptionHelper.raiseException(error, true, context);
     }
