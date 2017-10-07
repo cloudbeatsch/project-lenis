@@ -44,38 +44,21 @@ function processMembersPage(graph, context) {
 
 function processOrganization(context) {
     context[`step1Messages`] = [];
-    getOrganizations((err, orgs) => {
-        if(err) {
-            throw err
-        }
-        if(orgs) {
-            for (let i = 0; i < orgs.length; i++) {
-                context.step1Messages.push(JSON.stringify({ login: orgs[i], type : "organization"}));
-                executeMembersQuery(orgs[i], null, processMembersPage, context);
-            }
-        }
-    });
+    const orgs = process.env.ORGANIZATIONS.split(',');
+    for (let i = 0; i < orgs.length; i++) {
+        context.step1Messages.push(JSON.stringify({ login: orgs[i], type : "organization"}));
+        executeMembersQuery(orgs[i], null, processMembersPage, context);
+    }
 }
 
 function getOrganizations(callback) {
-    configHelper.getServiceConfig(tableName, serviceName, (err, serviceConfig) => {
-        if(err) {
-            return callback(err, null)
-        }
-        var orgs = serviceConfig.organizations.length > 0 ? serviceConfig.organizations.split(',') : null
-        return callback(null, orgs)
-    })
+
+    return callback(null, orgs)
 }
 
 module.exports = function (context) {
     try {
-        configHelper.setupConfig(tableName, serviceName, (err, serviceConfig) => {
-            if(err) {
-                return context.error('Cannot load service config, error: ' + err.toString())
-            }
-            context.log('Node.js queue trigger function processed work item', context.bindings.myQueueItem);
-            processOrganization(context);
-        })
+        processOrganization(context);
     } catch (error) {
         exceptionHelper.raiseException(error, true, context);
     }
