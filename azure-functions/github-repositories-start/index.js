@@ -51,11 +51,6 @@ function processOrganization(context) {
     }
 }
 
-function getOrganizations(callback) {
-
-    return callback(null, orgs)
-}
-
 module.exports = function (context) {
     try {
         processOrganization(context);
