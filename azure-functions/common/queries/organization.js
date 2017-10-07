@@ -21,6 +21,7 @@ const ORGANIZATION_MEMBERS_QUERY = `query($organization_name:String!, $end_curso
         }
         nodes {
           login
+          location
         }
       }
     }
