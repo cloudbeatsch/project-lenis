@@ -2,94 +2,53 @@
 
 let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
-let organizationQuery = require(`../common/queries/organization.js`).organizationQuery;
-let userQuery = require(`../common/queries/user.js`).userQuery;
+let organizationMembersQuery = require(`../common/queries/organization.js`).organizationMembersQuery;
 let configHelper = require(`../common/serviceConfigHelper.js`)
-let query = require(`azure-storage`);
-let path = require(`path`);
 
-var serviceName = path.basename(__dirname);
+function executeMembersQuery(organizationName, endCursor, next, context) {
+    let variables = JSON.stringify({
+        end_cursor: endCursor,
+        organization_name: organizationName
+    });
+    gitHubHelper.executeQuery(organizationMembersQuery, variables, next, context);
+}
 
-function executeQuery(endCursor, next, context) {
-    if (context.bindings.githubRepositoriesStep1.type == "organization") {
-        let variables = JSON.stringify({
-            end_cursor: endCursor,
-            organization_name: context.bindings.githubRepositoriesStep1.login
-        });
-        gitHubHelper.executeQuery(organizationQuery, variables, next, context);
+function processMembersPage(graph, context) {
+    if (!graph || !graph.data || !graph.data.organization || !graph.data.organization.members) {
+        context.bindings.githubRepositoriesStep1 = context.step1Messages;
+        context.done();
+        return;
     }
-    else if (context.bindings.githubRepositoriesStep1.type == "user") {
-        {
-            let variables = JSON.stringify({
-                end_cursor: endCursor,
-                user_login: context.bindings.githubRepositoriesStep1.login
-            });
-            gitHubHelper.executeQuery(userQuery, variables, next, context);
-        }
+
+    for (let i = 0; i < graph.data.organization.members.nodes.length; i++) {
+        context.step1Messages.push(JSON.stringify({ login: graph.data.organization.members.nodes[i].login, type : "user"}));
+    }
+
+    if (graph.data.organization.members.pageInfo.hasNextPage) {
+        // to not being flagged as abused we wait 10 seconds before executing the next query
+        context.log(`Wait 10 seconds before continuing query GitHub`);
+        setTimeout(function() {
+            executeOrganizationQuery(graph.data.organization.login, graph.data.organization.members.pageInfo.endCursor, processMembersPage, context);
+        }, 10000);
+    }
+    else {
+        context.bindings.githubRepositoriesStep1 = context.step1Messages;
+        context.done();
+        return;
     }
 }
 
-function processRepositoriesPage(graph, context) {
-    let entity;
-    if (context.bindings.githubRepositoriesStep1.type == "organization") {
-        if (!graph || !graph.data || !graph.data.organization || !graph.data.organization.repositories || !graph.data.organization.repositories.edges) {
-            context.bindings.githubRepositoriesStep2 = context.step2Messages;
-            context.done();
-            return;
-        }
-        entity = graph.data.organization;
-    }
-    else if (context.bindings.githubRepositoriesStep1.type == "user") {
-        if (!graph || !graph.data || !graph.data.user || !graph.data.user.repositories || !graph.data.user.repositories.edges) {
-            context.bindings.githubRepositoriesStep2 = context.step2Messages;
-            context.done();
-            return;
-        }
-        entity = graph.data.user;
-    }  
-
-    for (let i = 0; i < entity.repositories.edges.length; i++) {
-        let repo = entity.repositories.edges[i].node;
-        let topics = []
-        // adding the topics as properties 
-        for (let t = 0; t < repo.repositoryTopics.nodes.length; t++) {
-            topics.push(repo.repositoryTopics.nodes[t].topic.name);
-        }
-        let document = {
-            id: entity.id + `-` + repo.id,
-            ownerId: entity.id,
-            repositoryId: repo.id,
-            repositoryOwner: entity.login,
-            repositoryName: repo.name,
-            resourcePath: repo.resourcePath,
-            pushedAt: repo.pushedAt,
-            type: context.bindings.githubRepositoriesStep1.type,
-            isFork: repo.isFork,
-            description: repo.description,
-            topics: topics,
-        };
-        context.step2Messages.push(document);
-    }
-
-    if (entity.repositories.pageInfo.hasNextPage) {
-        // to not being flagged as abused we wait 10 seconds before executing the next query
-        context.log(`Wait 1 second before continuing query GitHub`);
-        setTimeout(function() {
-            executeQuery(entity.repositories.pageInfo.endCursor, processRepositoriesPage, context);
-        }, 1000);
-    }
-    else {
-        context.bindings.githubRepositoriesStep2 = context.step2Messages;
-        context.done();
-    }
+function processOrganization(context){
+    context[`step2Messages`] = [];
+    context.log(`process organization: ` + orgs[i]);
+    context.step2Messages.push(JSON.stringify({ login: context.bindings.githubRepositoriesStep1, type : "organization"}));
+    executeMembersQuery(context.bindings.githubRepositoriesStep1, null, processMembersPage, context);
 }
 
 module.exports = function (context) {
-    try{
-        context[`step2Messages`] = [];
-        executeQuery(null, processRepositoriesPage, context);
-    } 
-    catch(error) {
+    try {
+        processOrganization(context);
+    } catch (error) {
         exceptionHelper.raiseException(error, true, context);
     }
 }
