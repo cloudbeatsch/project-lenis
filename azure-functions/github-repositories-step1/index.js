@@ -38,16 +38,16 @@ function processMembersPage(graph, context) {
     }
 }
 
-function processOrganization(context){
+function processOrganization(org, context){
     context[`step2Messages`] = [];
-    context.log(`process organization: ` + orgs[i]);
-    context.step2Messages.push(JSON.stringify({ login: context.bindings.githubRepositoriesStep1, type : "organization"}));
-    executeMembersQuery(context.bindings.githubRepositoriesStep1, null, processMembersPage, context);
+    context.log(`process organization: ` + org);
+    context.step2Messages.push(JSON.stringify({ login: org, type : "organization"}));
+    executeMembersQuery(org, null, processMembersPage, context);
 }
 
 module.exports = function (context) {
     try {
-        processOrganization(context);
+        processOrganization(context.bindings.githubRepositoriesStep1, context);
     } catch (error) {
         exceptionHelper.raiseException(error, true, context);
     }
