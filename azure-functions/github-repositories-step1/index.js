@@ -15,13 +15,13 @@ function executeMembersQuery(organizationName, endCursor, next, context) {
 
 function processMembersPage(graph, context) {
     if (!graph || !graph.data || !graph.data.organization || !graph.data.organization.members) {
-        context.bindings.githubRepositoriesStep1 = context.step1Messages;
+        context.bindings.githubRepositoriesStep2 = context.step2Messages;
         context.done();
         return;
     }
 
     for (let i = 0; i < graph.data.organization.members.nodes.length; i++) {
-        context.step1Messages.push(JSON.stringify({ login: graph.data.organization.members.nodes[i].login, type : "user"}));
+        context.step2Messages.push(JSON.stringify({ login: graph.data.organization.members.nodes[i].login, type : "user"}));
     }
 
     if (graph.data.organization.members.pageInfo.hasNextPage) {
@@ -32,7 +32,7 @@ function processMembersPage(graph, context) {
         }, 10000);
     }
     else {
-        context.bindings.githubRepositoriesStep1 = context.step1Messages;
+        context.bindings.githubRepositoriesStep2 = context.step2Messages;
         context.done();
         return;
     }

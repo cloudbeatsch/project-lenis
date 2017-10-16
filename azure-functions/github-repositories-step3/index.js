@@ -37,7 +37,7 @@ function processResult(graph, context) {
         // to not being flagged as abused we wait 2 seconds before executing the next query
         context.log(`Wait 2 seconds before continuing query GitHub`);
         setTimeout(function() {
-            executeQuery(context.bindings.githubRepositoriesStep2.repositoryOwner, context.bindings.githubRepositoriesStep2.repositoryName, graph.data.repository.defaultBranchRef.target.history.pageInfo.endCursor, context);
+            executeQuery(context.bindings.githubRepositoriesStep3.repositoryOwner, context.bindings.githubRepositoriesStep3.repositoryName, graph.data.repository.defaultBranchRef.target.history.pageInfo.endCursor, context);
           }, 2000);
     }
 }
@@ -53,9 +53,9 @@ function executeQuery(repositoryOwner, repositoryName, endCursor, context) {
 
 module.exports = function (context) {
     try {
-        context['result'] = context.bindings.githubRepositoriesStep2;
+        context['result'] = context.bindings.githubRepositoriesStep3;
         context.result[`history`] = [];
-        executeQuery(context.bindings.githubRepositoriesStep2.repositoryOwner, context.bindings.githubRepositoriesStep2.repositoryName, null, context);
+        executeQuery(context.bindings.githubRepositoriesStep3.repositoryOwner, context.bindings.githubRepositoriesStep3.repositoryName, null, context);
     } 
     catch(error) {
         exceptionHelper.raiseException(error, true, context);

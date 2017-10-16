@@ -3,8 +3,8 @@
         {
           "type": "queueTrigger",
           "direction": "in",
-          "name": "githubRepositoriesStep2",
-          "queueName": "github-repositories-step2",
+          "name": "githubRepositoriesStep3",
+          "queueName": "github-repositories-step3",
           "connection": "AzureWebJobsStorage"
         },
         {

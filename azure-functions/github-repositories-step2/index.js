@@ -11,18 +11,18 @@ let path = require(`path`);
 var serviceName = path.basename(__dirname);
 
 function executeQuery(endCursor, next, context) {
-    if (context.bindings.githubRepositoriesStep1.type == "organization") {
+    if (context.bindings.githubRepositoriesStep2.type == "organization") {
         let variables = JSON.stringify({
             end_cursor: endCursor,
-            organization_name: context.bindings.githubRepositoriesStep1.login
+            organization_name: context.bindings.githubRepositoriesStep2.login
         });
         gitHubHelper.executeQuery(organizationQuery, variables, next, context);
     }
-    else if (context.bindings.githubRepositoriesStep1.type == "user") {
+    else if (context.bindings.githubRepositoriesStep2.type == "user") {
         {
             let variables = JSON.stringify({
                 end_cursor: endCursor,
-                user_login: context.bindings.githubRepositoriesStep1.login
+                user_login: context.bindings.githubRepositoriesStep2.login
             });
             gitHubHelper.executeQuery(userQuery, variables, next, context);
         }
@@ -31,17 +31,17 @@ function executeQuery(endCursor, next, context) {
 
 function processRepositoriesPage(graph, context) {
     let entity;
-    if (context.bindings.githubRepositoriesStep1.type == "organization") {
+    if (context.bindings.githubRepositoriesStep2.type == "organization") {
         if (!graph || !graph.data || !graph.data.organization || !graph.data.organization.repositories || !graph.data.organization.repositories.edges) {
-            context.bindings.githubRepositoriesStep2 = context.step2Messages;
+            context.bindings.githubRepositoriesStep3 = context.step3Messages;
             context.done();
             return;
         }
         entity = graph.data.organization;
     }
-    else if (context.bindings.githubRepositoriesStep1.type == "user") {
+    else if (context.bindings.githubRepositoriesStep2.type == "user") {
         if (!graph || !graph.data || !graph.data.user || !graph.data.user.repositories || !graph.data.user.repositories.edges) {
-            context.bindings.githubRepositoriesStep2 = context.step2Messages;
+            context.bindings.githubRepositoriesStep3 = context.step3Messages;
             context.done();
             return;
         }
@@ -63,12 +63,12 @@ function processRepositoriesPage(graph, context) {
             repositoryName: repo.name,
             resourcePath: repo.resourcePath,
             pushedAt: repo.pushedAt,
-            type: context.bindings.githubRepositoriesStep1.type,
+            type: context.bindings.githubRepositoriesStep2.type,
             isFork: repo.isFork,
             description: repo.description,
             topics: topics,
         };
-        context.step2Messages.push(document);
+        context.step3Messages.push(document);
     }
 
     if (entity.repositories.pageInfo.hasNextPage) {
@@ -79,14 +79,14 @@ function processRepositoriesPage(graph, context) {
         }, 1000);
     }
     else {
-        context.bindings.githubRepositoriesStep2 = context.step2Messages;
+        context.bindings.githubRepositoriesStep3 = context.step3Messages;
         context.done();
     }
 }
 
 module.exports = function (context) {
     try{
-        context[`step2Messages`] = [];
+        context[`step3Messages`] = [];
         executeQuery(null, processRepositoriesPage, context);
     } 
     catch(error) {
