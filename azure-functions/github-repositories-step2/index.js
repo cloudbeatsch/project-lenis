@@ -4,9 +4,6 @@ let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 let organizationQuery = require(`../common/queries/organization.js`).organizationQuery;
 let userQuery = require(`../common/queries/user.js`).userQuery;
-let configHelper = require(`../common/serviceConfigHelper.js`)
-let query = require(`azure-storage`);
-let path = require(`path`);
 
 var serviceName = path.basename(__dirname);
 

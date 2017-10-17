@@ -40,9 +40,9 @@ function processMembersPage(graph, context) {
 
 function processOrganization(org, context){
     context[`step2Messages`] = [];
-    context.log(`process organization: ` + org.login);
+    context.log(`process organization: ` + org);
     context.step2Messages.push(JSON.stringify({ login: org, type : "organization"}));
-    executeMembersQuery(org.login, null, processMembersPage, context);
+    executeMembersQuery(org, null, processMembersPage, context);
 }
 
 module.exports = function (context) {
