@@ -56,14 +56,6 @@
         "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
       }
     },
-    "skuCapacity": {
-      "type": "int",
-      "defaultValue": 2,
-      "minValue": 1,
-      "metadata": {
-        "description": "Describes plan's instance count"
-      }
-    },    
     "sourceCodeRepositoryURL": {
       "type": "string",
       "defaultValue": "https://github.com/cloudbeatsch/project-lenis.git"
@@ -121,7 +113,7 @@
       },
       "sku": {
        "name": "[parameters('skuName')]",
-       "capacity": "[parameters('skuCapacity')]"
+       "capacity": "1"
       }
     },
     {
