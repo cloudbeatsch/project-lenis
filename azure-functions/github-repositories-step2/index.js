@@ -5,8 +5,6 @@ let exceptionHelper = require(`../common/exceptions.js`);
 let organizationQuery = require(`../common/queries/organization.js`).organizationQuery;
 let userQuery = require(`../common/queries/user.js`).userQuery;
 
-var serviceName = path.basename(__dirname);
-
 function executeQuery(endCursor, next, context) {
     if (context.bindings.githubRepositoriesStep2.type == "organization") {
         let variables = JSON.stringify({
