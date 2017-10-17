@@ -50,6 +50,9 @@ GraphQL API v4 and PowerBI.
 * Apply your changes by running `node lenis-service apply <YOUR_SERVICE_NAME> -f service.json`
 * Your services will now pick up this updated config when performing queries
 
+# Configuring the PowerBI datasources
+Edit the data query and set for each query the datasource to your CosmosDB endpoint. Provide the account key when requested.
+
 # Development Tools
 * [Power BI Desktop](https://go.microsoft.com/fwlink/?LinkId=521662&clcid=0x409)
 * [Node.js](https://nodejs.org/en/)
