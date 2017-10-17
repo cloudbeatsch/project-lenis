@@ -18,12 +18,17 @@ function entries (obj) {
     return entries;
 }
 
+function done(context) {
+    context.log(`Adding commits to cosmos db`);
+    context.result[`history`] = entries(context.history);
+    context.bindings.githubRepositoriesDocument =  JSON.stringify(context.result);
+    context.done();
+}
+
 function processResult(graph, context) {
     let result = context.result;
     if (!graph || !graph.data || !graph.data.repository || !graph.data.repository.defaultBranchRef || !graph.data.repository.defaultBranchRef.target) {
-        context.log(`Adding commits to cosmos db`);
-        context.bindings.githubRepositoriesDocument =  JSON.stringify(result);
-        context.done();
+        done(context);
         return;
     }
     for (let i = 0; i < graph.data.repository.defaultBranchRef.target.history.edges.length; i++) {
@@ -40,10 +45,7 @@ function processResult(graph, context) {
     }
 
     if ((context.nrOfCommits >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPage)) {
-        context.log(`Adding commits to cosmos db`);
-        context.result[`history`] = entries(context.history);
-        context.bindings.githubRepositoriesDocument =  JSON.stringify(result);
-        context.done();
+        done(context);
         return;
     }
     else {
@@ -67,9 +69,14 @@ function executeQuery(repositoryOwner, repositoryName, endCursor, context) {
 module.exports = function (context) {
     try {
         context[`result`] = context.bindings.githubRepositoriesStep3;
-        context[`history`] = {};
+        context[`history`] = [];
         context[`nrOfCommits`] = 0;
-        executeQuery(context.bindings.githubRepositoriesStep3.repositoryOwner, context.bindings.githubRepositoriesStep3.repositoryName, null, context);
+        if (context.result.isFork == false) {
+            executeQuery(context.bindings.githubRepositoriesStep3.repositoryOwner, context.bindings.githubRepositoriesStep3.repositoryName, null, context);
+        }
+        else {
+            done(context);
+        }
     } 
     catch(error) {
         exceptionHelper.raiseException(error, true, context);
