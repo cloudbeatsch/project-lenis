@@ -5,8 +5,6 @@
 Provide insight into GitHub users, organizations and repositories using the GitHub 
 GraphQL API v4 and PowerBI.
 
-`project-lenis` wants to provide deep insight into the many different OSS projects within and across GitHub organizations by implementing the ability to visualize and analyze key metrics across users, repositories and organizations.
-
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcloudbeatsch%2Fproject-lenis%2Fmaster%2Fdeployment%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
@@ -14,8 +12,6 @@ GraphQL API v4 and PowerBI.
 <a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fcloudbeatsch%2Fproject-lenis%2Fmaster%2Fdeployment%2Fazuredeploy.json" target="_blank">
     <img src="http://armviz.io/visualizebutton.png"/>
 </a>
-
-
 
 # Architecture
 ![Architecture overview](https://raw.githubusercontent.com/cloudbeatsch/project-lenis/master/diagrams/architecture.png)
@@ -25,30 +21,88 @@ GraphQL API v4 and PowerBI.
 * If a `nano service` requires sequential processing (e.g. extract the key contributors for each repository), the task should be split into multiple functions which are triggered by a queue message.
 * AppSettings (e.g. which repositories should be processed/excluded) are set through the `CLI tool`.
 
-# Nano Service Development Guidance
+# Deploy to Azure
+In order to use `project-lenis` the first thing you'll need to do is to deploy the Azure resources to your Azure subscription. Click the `Deploy to Azure` button **(below)** to kick off a deployment.
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcloudbeatsch%2Fproject-lenis%2Fmaster%2Fdeployment%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+You will be required to provide the following parameters:
+* `appName`: A unique identifier for your app deployment
+* `githubToken`: A Personal Access Token for GitHub. You can generate one [here](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/)
+* `databaseAccountName`: A unique identifier for your CosmosDB account name
+* `organizations`: A comma seperated list of organisations to query against
+
+# Configuration
+You can define a list of organizations you wish to query when you perform the Azure deployment. However, you may want to change this list post deployment. In order to do that you'll need to follow the instructions below:
+
+* Install the functions core tools on your local machine
+```
+npm -i -g azure-functions-core-tools
+```
+* Navigate to the azure-functions directory
+```
+cd $REPO_ROOT/azure-functions
+```
+* Login to Azure functions tooling
+```
+func azure login
+```
+* Set the appropriate Azure subscription
+```
+func azure account set <SubscriptionId>
+```
+* List the current function apps available within your subscription. Grab the name of your project lenis function app.
+```
+func azure functionapp list
+```
+* Download the current Azure function app's appsettings file
+```
+func azure functionapp fetch <functionAppName>
+```
+* Edit the `local.settings.json` file and set the appropriate values
+* Update the Azure function app with your new local settings file
+```
+func azure functionapp publish <functionAppName> -o -y
+```
+
+# Deploy Services Locally
+* Install the functions core tools on your local machine if they do not already exist
+```
+npm i -g azure-functions-core-tools
+```
+* Navigate to the azure functions directory
+```
+cd $REPO_ROOT/azure-functions
+```
+* Install Nodejs dependenices
+```
+npm install
+```
+* Create a local settings file if you do not currently have one
+```
+cp appsettings.json local.settings.json
+```
+* Check appropriate values are set in your `local.settings.json` file
+
+* Run the azure functions runtime host
+```
+func host start --debug vscode
+```
+
+* Open the folder `project-lenis` in Visual Studio Code, switch to the Debug view and select `Attach to Azure Functions`
+* Open a new terminal and navigate to the `$REPO_ROOT/azure-functions` directory
+
+* Execute the individual functions
+```
+func run your-function-name
+```
+
+# Custom Nano Service Development Guidance
 * Create a new folder within the `azure-functions` directory. Name it the same way as your `nano service` is called (e.g. `github-repositories`). Place all your function files into this folder.
 * Name your document collection by using the `nano-service` name followed by the description of the collection itself (e.g. `githubRepositories`)
 * Save your Power BI template in the `power-bi` folder. Name the same way as your `nano service` called (e.g. `github-collaboration-graph.pbit`)
-
-# Configuration
-* Set the `GITHUB_TOKEN` as describe [here](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/)
-
-# Running local
-* Install the functions core tools `npm i -g azure-functions-core-tools`
-* Copy the `appsettings.json` in `azure-functions` into `local.settings.json` and configure the required settings.
-* `cd` into `azure-functions` and run `npm install`
-* Run `func host start --debug vscode`
-* In Visual Studio Code, in the Debug view, select `Attach to Azure Functions`
-* Then you can trigger the function by running `func run your-function-name` where `your-function-name` is the name of your function
-
-# Using the CLI
-* `cd` into `cli/` and run `npm install`
-* Run `node lenis login <AZURE_TABLE_NAME> "<AZURE_STORAGE_CONNECTION_STRING>"`
-* Run `node lenis-service list` to list all the currently loaded services
-* Run `node lenis-service get <YOUR_SERVICE_NAME> -o json > service.json` to download the service's current configuration
-* Edit the `service.json` file using a text editor i.e. vscode, atom, notepad.
-* Apply your changes by running `node lenis-service apply <YOUR_SERVICE_NAME> -f service.json`
-* Your services will now pick up this updated config when performing queries
 
 # Configuring the PowerBI datasources
 Edit the data query and set for each query the datasource to your CosmosDB endpoint. Provide the account key when requested.
