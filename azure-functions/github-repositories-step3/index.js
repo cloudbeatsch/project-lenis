@@ -10,9 +10,9 @@ function entries (obj) {
     let entries = []
     for (var key in obj) {
         if (obj.hasOwnProperty(key) && obj.propertyIsEnumerable(key)) {
-            entry = {};
-            entry[key]=obj[key];
-            entries.push(entry);
+            // entry = {};
+            // entry[key]=obj[key];
+            entries.push([key, obj[key]]);
         }
     }
     return entries;
