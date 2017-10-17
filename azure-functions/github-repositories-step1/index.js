@@ -3,7 +3,6 @@
 let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 let organizationMembersQuery = require(`../common/queries/organization.js`).organizationMembersQuery;
-let configHelper = require(`../common/serviceConfigHelper.js`)
 
 function executeMembersQuery(organizationName, endCursor, next, context) {
     let variables = JSON.stringify({

@@ -9,7 +9,7 @@ function processOrganization(context) {
         context.log(`process organization: ` + orgs[i]);
         context.step1Messages.push(orgs[i]);
     }
-    context.bindings.githubRepositoriesStep1 = step1Messages;
+    context.bindings.githubRepositoriesStep1 = context.step1Messages;
     context.done();
 }
 
