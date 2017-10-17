@@ -8,8 +8,8 @@ function processOrganization(context) {
     for (let i = 0; i < orgs.length; i++) {
         context.log(`process organization: ` + orgs[i]);
         context.step1Messages.push(orgs[i]);
-        executeMembersQuery(orgs[i], null, processMembersPage, context);
     }
+    context.done();
 }
 
 module.exports = function (context) {
