@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 var program = require('commander');
-var fs = require("fs")
+var fs = require("fs");
 
-var profilePath = './profile.json'
+var profilePath = './profile.json';
 if (!fs.existsSync(profilePath)) {
-  var defaultProfile = JSON.stringify({ tableName: "", tableConnectionString: "" }, null, 2)
+  var defaultProfile = JSON.stringify({ tableName: "", tableConnectionString: "" }, null, 2);
   fs.writeFileSync(profilePath, defaultProfile);
 }
 var profile = require(profilePath);

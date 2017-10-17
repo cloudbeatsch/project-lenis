@@ -1,0 +1,21 @@
+{
+  "bindings": [
+        {
+          "type": "queueTrigger",
+          "direction": "in",
+          "name": "githubRepositoriesStep3",
+          "queueName": "github-repositories-step3",
+          "connection": "AzureWebJobsStorage"
+        },
+        {
+          "name": "githubRepositoriesDocument",
+          "type": "documentDB",
+          "databaseName": "project-lenis",
+          "collectionName": "githubRepositories",
+          "createIfNotExists": true,
+          "connection": "COSMOS_DB_CONNECTION_STRING",     
+          "direction": "out"
+        }
+  ],
+  "disabled": false
+}

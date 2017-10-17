@@ -35,6 +35,27 @@
         "description": "Storage Account type"
       }
     },
+    "skuName": {
+      "type": "string",
+      "defaultValue": "S1",
+      "allowedValues": [
+        "F1",
+        "D1",
+        "B1",
+        "B2",
+        "B3",
+        "S1",
+        "S2",
+        "S3",
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "metadata": {
+        "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+      }
+    },
     "sourceCodeRepositoryURL": {
       "type": "string",
       "defaultValue": "https://github.com/cloudbeatsch/project-lenis.git"
@@ -88,9 +109,11 @@
       "name": "[variables('hostingPlanName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "name": "[variables('hostingPlanName')]",
-        "computeMode": "Dynamic",
-        "sku": "Dynamic"
+        "name": "[variables('hostingPlanName')]"
+      },
+      "sku": {
+       "name": "[parameters('skuName')]",
+       "capacity": "1"
       }
     },
     {
@@ -158,6 +181,10 @@
             {
               "name": "AZURE_STORAGE_CONNECTION_STRING",
               "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
+            },
+            {
+              "name": "WEBSITE_MAX_DYNAMIC_APPLICATION_SCALE_OUT",
+              "value": "1"
             }
           ]
         }

@@ -43,12 +43,15 @@ GraphQL API v4 and PowerBI.
 
 # Using the CLI
 * `cd` into `cli/` and run `npm install`
-* Run `lenis login <AZURE_TABLE_NAME> "<AZURE_STORAGE_CONNECTION_STRING>"`
-* Run `lenis service list` to list all the currently loaded services
-* Run `lenis service get <YOUR_SERVICE_NAME> -o json > service.json` to download the service's current configuration
+* Run `node lenis login <AZURE_TABLE_NAME> "<AZURE_STORAGE_CONNECTION_STRING>"`
+* Run `node lenis-service list` to list all the currently loaded services
+* Run `node lenis-service get <YOUR_SERVICE_NAME> -o json > service.json` to download the service's current configuration
 * Edit the `service.json` file using a text editor i.e. vscode, atom, notepad.
-* Apply your changes by running `lenis service apply <YOUR_SERVICE_NAME> -f service.json`
+* Apply your changes by running `node lenis-service apply <YOUR_SERVICE_NAME> -f service.json`
 * Your services will now pick up this updated config when performing queries
+
+# Configuring the PowerBI datasources
+Edit the data query and set for each query the datasource to your CosmosDB endpoint. Provide the account key when requested.
 
 # Development Tools
 * [Power BI Desktop](https://go.microsoft.com/fwlink/?LinkId=521662&clcid=0x409)
