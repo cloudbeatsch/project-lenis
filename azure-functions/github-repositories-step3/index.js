@@ -4,7 +4,19 @@ let gitHubHelper = require(`../common/githubGraphQL.js`);
 let exceptionHelper = require(`../common/exceptions.js`);
 let repositoryQuery = require(`../common/queries/repository.js`).repositoryQuery;
 
-const MAX_COMMITS = 1000;
+const MAX_COMMITS = 100000;
+
+function entries (obj) {
+    let entries = []
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key) && obj.propertyIsEnumerable(key)) {
+            entry = {};
+            entry[key]=obj[key];
+            entries.push(entry);
+        }
+    }
+    return entries;
+}
 
 function processResult(graph, context) {
     let result = context.result;
@@ -16,19 +28,20 @@ function processResult(graph, context) {
     }
     for (let i = 0; i < graph.data.repository.defaultBranchRef.target.history.edges.length; i++) {
         let commit = graph.data.repository.defaultBranchRef.target.history.edges[i].node;
-        
-        let commitObj = {};
+        context.nrOfCommits++;
         if (commit.author.user) {
-            commitObj[`login`] = commit.author.user.login;
+            if (context.history[commit.author.user.login]) {
+                context.history[commit.author.user.login]++;
+            }
+            else {
+                context.history[commit.author.user.login] = 1;               
+            }
         }
-        if (commit.committedDate){
-            commitObj[`committedDate`] = commit.committedDate;
-        }
-        result.history.push({commitObj});
     }
 
-    if ((result.history.length >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPage)) {
+    if ((context.nrOfCommits >= MAX_COMMITS) || (!graph.data.repository.defaultBranchRef.target.history.pageInfo.hasNextPage)) {
         context.log(`Adding commits to cosmos db`);
+        context.result[`history`] = entries(context.history);
         context.bindings.githubRepositoriesDocument =  JSON.stringify(result);
         context.done();
         return;
@@ -53,8 +66,9 @@ function executeQuery(repositoryOwner, repositoryName, endCursor, context) {
 
 module.exports = function (context) {
     try {
-        context['result'] = context.bindings.githubRepositoriesStep3;
-        context.result[`history`] = [];
+        context[`result`] = context.bindings.githubRepositoriesStep3;
+        context[`history`] = {};
+        context[`nrOfCommits`] = 0;
         executeQuery(context.bindings.githubRepositoriesStep3.repositoryOwner, context.bindings.githubRepositoriesStep3.repositoryName, null, context);
     } 
     catch(error) {
