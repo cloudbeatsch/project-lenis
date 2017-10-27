@@ -22,6 +22,7 @@ const REPOSITORY_QUERY = `query ($repository_owner:String!, $repository_name:Str
                                  user {
                                     login
                                     name
+                                    location
                                 }
                               }
                            }
