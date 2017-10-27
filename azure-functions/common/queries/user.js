@@ -6,6 +6,7 @@ const USER_QUERY = `query ($user_login:String!, $end_cursor:String){
         id
         login
         name
+        location
         repositories(first: 10, after: $end_cursor orderBy: {field: PUSHED_AT, direction: DESC}) {
         ... REPOSITORY_FRAGMENT
       }

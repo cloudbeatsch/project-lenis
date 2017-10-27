@@ -35,10 +35,13 @@ function processResult(graph, context) {
         context.nrOfCommits++;
         if (commit.author.user) {
             if (context.history[commit.author.user.login]) {
-                context.history[commit.author.user.login]++;
+                context.history[commit.author.user.login].contributions++;
             }
             else {
-                context.history[commit.author.user.login] = 1;               
+                context.history[commit.author.user.login] = { 
+                    location : commit.author.user.location,  
+                    contributions : 1
+                };               
             }
         }
     }

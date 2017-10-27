@@ -26,6 +26,7 @@ function executeQuery(endCursor, next, context) {
 
 function processRepositoriesPage(graph, context) {
     let entity;
+    let location;
     if (context.bindings.githubRepositoriesStep2.type == "organization") {
         if (!graph || !graph.data || !graph.data.organization || !graph.data.organization.repositories || !graph.data.organization.repositories.edges) {
             context.bindings.githubRepositoriesStep3 = context.step3Messages;
@@ -41,6 +42,7 @@ function processRepositoriesPage(graph, context) {
             return;
         }
         entity = graph.data.user;
+        location = entity.location;
     }  
 
     for (let i = 0; i < entity.repositories.edges.length; i++) {
@@ -55,6 +57,7 @@ function processRepositoriesPage(graph, context) {
             ownerId: entity.id,
             repositoryId: repo.id,
             repositoryOwner: entity.login,
+            ownerLocation: location,
             repositoryName: repo.name,
             resourcePath: repo.resourcePath,
             pushedAt: repo.pushedAt,
