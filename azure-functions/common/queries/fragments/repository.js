@@ -10,6 +10,10 @@ const REPOSITORY_FRAGMENT = `fragment REPOSITORY_FRAGMENT on RepositoryConnectio
         node {
             id
             name
+            owner {
+                login
+                id
+            }
             watchers {
                 totalCount
             }
