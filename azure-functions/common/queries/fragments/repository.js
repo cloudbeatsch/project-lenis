@@ -10,6 +10,16 @@ const REPOSITORY_FRAGMENT = `fragment REPOSITORY_FRAGMENT on RepositoryConnectio
         node {
             id
             name
+            watchers {
+                totalCount
+            }
+            issues {
+                totalCount
+            }
+            forkCount
+            stargazers {
+                totalCount
+            }
             resourcePath  
             pushedAt
             repositoryTopics(first: 10) {

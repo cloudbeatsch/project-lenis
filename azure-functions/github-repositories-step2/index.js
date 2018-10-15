@@ -63,6 +63,10 @@ function processRepositoriesPage(graph, context) {
             pushedAt: repo.pushedAt,
             type: context.bindings.githubRepositoriesStep2.type,
             isFork: repo.isFork,
+            forkCount: repo.forkCount,
+            issuesCount: repo.issues.totalCount,
+            starsCount: repo.stargazers.totalCount,
+            watchersCount: repo.watchers.totalCount,
             description: repo.description,
             topics: topics,
         };
