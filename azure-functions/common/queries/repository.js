@@ -8,6 +8,10 @@ const REPOSITORY_QUERY = `query ($repository_owner:String!, $repository_name:Str
         issues {
             totalCount
         }
+        owner {
+            login
+            id
+        }
         forkCount
         stargazers {
             totalCount

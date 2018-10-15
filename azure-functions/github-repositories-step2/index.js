@@ -54,9 +54,9 @@ function processRepositoriesPage(graph, context) {
         }
         let document = {
             id: entity.id + `-` + repo.id,
-            ownerId: entity.id,
+            ownerId: repo.owner.id,
             repositoryId: repo.id,
-            repositoryOwner: entity.login,
+            repositoryOwner: repo.owner.login,
             ownerLocation: location,
             repositoryName: repo.name,
             resourcePath: repo.resourcePath,

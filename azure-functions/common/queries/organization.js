@@ -36,7 +36,7 @@ const ORGANIZATION_MEMBERS_QUERY = `query($organization_name:String!, $end_curso
         }
         nodes {
           login
-          repositories(first: 10, after: $end_repos_cursor orderBy: {field: PUSHED_AT, direction: DESC}) {
+          repositories(first: 10, isFork: false, after: $end_repos_cursor orderBy: {field: PUSHED_AT, direction: DESC}) {
             ... REPOSITORY_FRAGMENT
           }
         }
