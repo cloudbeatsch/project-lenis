@@ -2,7 +2,17 @@
 
 const REPOSITORY_QUERY = `query ($repository_owner:String!, $repository_name:String!, $end_cursor:String ){
     repository( owner : $repository_owner, name : $repository_name) {
-       defaultBranchRef {
+        watchers {
+            totalCount
+        }
+        issues {
+            totalCount
+        }
+        forkCount
+        stargazers {
+            totalCount
+        }
+        defaultBranchRef {
            target {
                ... on Commit {
                    id
