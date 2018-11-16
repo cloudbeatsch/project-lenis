@@ -34,39 +34,6 @@ You will be required to provide the following parameters:
 * `databaseAccountName`: A unique identifier for your CosmosDB account name
 * `organizations`: A comma seperated list of organisations to query against
 
-# Configuration
-You can define a list of organizations you wish to query when you perform the Azure deployment. However, you may want to change this list post deployment. In order to do that you'll need to follow the instructions below:
-
-* Install the functions core tools on your local machine
-```
-npm -i -g azure-functions-core-tools
-```
-* Navigate to the azure-functions directory
-```
-cd $REPO_ROOT/azure-functions
-```
-* Login to Azure functions tooling
-```
-func azure login
-```
-* Set the appropriate Azure subscription
-```
-func azure account set <SubscriptionId>
-```
-* List the current function apps available within your subscription. Grab the name of your project lenis function app.
-```
-func azure functionapp list
-```
-* Download the current Azure function app's appsettings file
-```
-func azure functionapp fetch <functionAppName>
-```
-* Edit the `local.settings.json` file and set the appropriate values
-* Update the Azure function app with your new local settings file
-```
-func azure functionapp publish <functionAppName> -o -y
-```
-
 # Deploy Services Locally
 * Install the functions core tools on your local machine if they do not already exist
 ```
