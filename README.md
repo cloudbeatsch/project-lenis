@@ -53,6 +53,11 @@ cp appsettings.json local.settings.json
 ```
 * Check appropriate values are set in your `local.settings.json` file
 
+* Register binding extensions ((see [Register binding extensions](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings)))
+```
+func extensions install
+```
+
 * Run the azure functions runtime host
 ```
 func host start --debug vscode
@@ -61,7 +66,7 @@ func host start --debug vscode
 * Open the folder `project-lenis` in Visual Studio Code, switch to the Debug view and select `Attach to Azure Functions`
 * Open a new terminal and navigate to the `$REPO_ROOT/azure-functions` directory
 
-* Execute the individual functions
+* Execute the individual functions (v.1 only)
 ```
 func run your-function-name
 ```

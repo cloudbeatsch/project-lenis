@@ -6,18 +6,22 @@ let organizationQuery = require(`../common/queries/organization.js`).organizatio
 let userQuery = require(`../common/queries/user.js`).userQuery;
 
 function executeQuery(endCursor, next, context) {
-    if (context.bindings.githubRepositoriesStep2.type == "organization") {
+    let input = context.bindings.githubRepositoriesStep2;
+
+    context.collectionSuffix = (input.collectionSuffix != undefined && input.collectionSuffix != null) ? input.collectionSuffix : "";
+
+    if (input.type == "organization") {
         let variables = JSON.stringify({
             end_cursor: endCursor,
-            organization_name: context.bindings.githubRepositoriesStep2.login
+            organization_name: input.login
         });
         gitHubHelper.executeQuery(organizationQuery, variables, next, context);
     }
-    else if (context.bindings.githubRepositoriesStep2.type == "user") {
+    else if (input.type == "user") {
         {
             let variables = JSON.stringify({
                 end_cursor: endCursor,
-                user_login: context.bindings.githubRepositoriesStep2.login
+                user_login: input.login
             });
             gitHubHelper.executeQuery(userQuery, variables, next, context);
         }
@@ -69,6 +73,7 @@ function processRepositoriesPage(graph, context) {
             watchersCount: repo.watchers.totalCount,
             description: repo.description,
             topics: topics,
+            collectionSuffix: context.collectionSuffix
         };
         context.step3Messages.push(document);
     }

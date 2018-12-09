@@ -1,0 +1,9 @@
+{
+  "name": "github-ms-users",
+  "version": "1.0.0",
+  "author": "Natasa Manousopoulou <anastm@microsoft.com>",
+  "dependencies": {
+    "applicationinsights": "^0.16.0",
+    "azure-storage": "^1.3.1"
+  }
+}
